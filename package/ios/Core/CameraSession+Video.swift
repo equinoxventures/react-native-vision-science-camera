@@ -183,7 +183,7 @@ extension CameraSession {
         var torchEnd = DispatchTimeInterval.milliseconds(Int(self.configuration!.torchDelay) + Int(self.configuration!.torchDuration))
 
         if let backgroundLevelValue = self.configuration!.backgroundLevel as? Double {
-          if backgroundLevelValue > 0.0 && self.configuration!.enableBackgroundTorch && Int(self.configuration!.backgroundDelay) > 0 {
+          if backgroundLevelValue > 0.0 && Int(self.configuration!.backgroundDelay) > 0 {
             DispatchQueue.main.asyncAfter(deadline: .now() + backgroundDelay) {
               self.recordingTimestamps.requestBackgroundTorchOnAt = NSDate().timeIntervalSince1970
               self.setBackgroundLight(self.configuration!.backgroundLevel, torchMode: "on")
@@ -209,7 +209,7 @@ extension CameraSession {
             self.recordingTimestamps.requestTorchOffAt = NSDate().timeIntervalSince1970
             self.setTorchMode("off", torchLevelVal: self.configuration!.torchLevel)
             if let backgroundLevelValue = self.configuration!.backgroundLevel as? Double {
-              if backgroundLevelValue > 0.0 && self.configuration!.enableBackgroundTorch && Int(self.configuration!.backgroundDelay) > 0 {
+              if backgroundLevelValue > 0.0 && Int(self.configuration!.backgroundDelay) > 0 {
                 self.setBackgroundLight(self.configuration!.backgroundLevel, torchMode: "on")
               }
             }

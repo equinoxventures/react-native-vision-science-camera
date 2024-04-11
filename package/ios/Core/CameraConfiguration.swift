@@ -40,13 +40,12 @@ final class CameraConfiguration {
   var maxFps: Int32?
   var enableLowLightBoost = false
   var torch: Torch = .off
-  var torchLevel: NSNumber = 0.7
+  var torchLevel: NSNumber = 0
   var torchDelay: NSNumber = 0
   var torchDuration: NSNumber = 0
-  var backgroundLevel: NSNumber = 0.0
+  var backgroundLevel: NSNumber = 0
   var backgroundDelay: NSNumber = 0
   var backgroundDuration: NSNumber = 0
-  var enableBackgroundTorch = false
   var isTorchOn = false
 
   // Zoom
@@ -83,7 +82,6 @@ final class CameraConfiguration {
       backgroundLevel = other.backgroundLevel
       backgroundDelay = other.backgroundDelay
       backgroundDuration = other.backgroundDuration
-      enableBackgroundTorch = other.enableBackgroundTorch
       zoom = other.zoom
       exposure = other.exposure
       isActive = other.isActive
