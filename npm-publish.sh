@@ -1,6 +1,8 @@
+#!/usr/bin/env node
+
 const fs = require('fs');
 const { exec } = require('child_process');
-
+const otp = process.argv[2];
 // Read the package.json file
 const data = fs.readFileSync('package/package.json', 'utf-8');
 
@@ -23,9 +25,10 @@ const updatedData = JSON.stringify(packageJson, null, 2);
 // Write the updated JSON string back to the package.json file
 fs.writeFileSync('package/package.json', updatedData + '\n', 'utf8');
 
-exec('cd package && npm pack', (error, stdout, stderr) => {
+exec(`cd package && npm publish --otp=${otp}`, (error, stdout, stderr) => {
   if (error) {
     console.error(`exec error: ${error}`);
+    console.error(`otp: ${otp}`)
     return;
   }
   console.log(`stdout: ${stdout}`);
