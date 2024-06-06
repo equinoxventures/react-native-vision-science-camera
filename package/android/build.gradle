@@ -212,15 +212,15 @@ dependencies {
 task deleteCmakeCache() {
   doFirst {
     delete "${projectDir}/.cxx"
-    delete "${nodeModules}/react-native-vision-camera/android/.cxx"
-    delete "${nodeModules}/react-native-vision-camera/android/build"
+    delete "${nodeModules}/@equinoxventures/react-native-vision-science-camera/android/.cxx"
+    delete "${nodeModules}/@equinoxventures/react-native-vision-science-camera/android/build"
   }
 }
 
 task prepareHeaders(type: Copy) {
   from fileTree('./src/main/cpp').filter { it.isFile() }
   include "*.h"
-  into "${project.buildDir}/headers/visioncamera/react-native-vision-camera/"
+  into "${project.buildDir}/headers/visioncamera/react-native-vision-science-camera/"
   includeEmptyDirs = false
 }
 
@@ -241,5 +241,15 @@ tasks.configureEach { task ->
   // C++ clean
   if (task.name.contains("clean")) {
     task.dependsOn(deleteCmakeCache)
+  }
+}
+
+// Fixing the task dependency issue
+afterEvaluate {
+  tasks.matching { it.name == 'packageDebugResources' }.all {
+    dependsOn tasks.matching { it.name == 'generateDebugResValues' }
+  }
+  tasks.matching { it.name == 'packageReleaseResources' }.all {
+    dependsOn tasks.matching { it.name == 'generateReleaseResValues' }
   }
 }
