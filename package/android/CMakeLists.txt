@@ -6,7 +6,6 @@ set(BUILD_DIR ${CMAKE_SOURCE_DIR}/build)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(ENABLE_FRAME_PROCESSORS ON) 
 set(CMAKE_CXX_STANDARD 17)
-find_package(react-native-worklets-core REQUIRED CONFIG)
 
 # Third party libraries (Prefabs)
 find_package(ReactAndroid REQUIRED CONFIG)
