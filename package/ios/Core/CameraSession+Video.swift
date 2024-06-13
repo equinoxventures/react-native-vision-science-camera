@@ -176,7 +176,6 @@ extension CameraSession {
         }
 
         let recordingStartTimestamp = NSDate().timeIntervalSince1970
-        ReactLogger.log(level: .info, message: "recordingStartTimestamp:  \(recordingStartTimestamp)")
         self.recordingTimestamps.actualRecordingStartedAt = NSDate().timeIntervalSince1970
 
         var torchDelay = DispatchTimeInterval.milliseconds(Int(self.configuration!.torchDelay))
@@ -239,7 +238,6 @@ extension CameraSession {
         // Use Video [AVCaptureSession] clock as a timebase - all other sessions (here; audio) have to be synced to that Clock.
         recordingSession.stop(clock: self.captureSession.clock)
         let recordingStopTimestamp = NSDate().timeIntervalSince1970
-        ReactLogger.log(level: .info, message: "recordingStopTimestamp:  \(recordingStopTimestamp)")
         self.recordingTimestamps.actualRecordingEndedAt = NSDate().timeIntervalSince1970
         // There might be late frames, so maybe we need to still provide more Frames to the RecordingSession. Let's keep isRecording true for now.
         return nil
