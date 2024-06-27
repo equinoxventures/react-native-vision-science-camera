@@ -86,6 +86,12 @@ class CameraView(context: Context) :
   var isActive = false
   var torch: Torch = Torch.OFF
   var zoom: Float = 1f // in "factor"
+  var torchLevel: Double = 0.0
+  var torchDelay: Double = 0.0
+  var torchDuration: Double = 0.0
+  var backgroundLevel: Double = 0.0
+  var backgroundDelay: Double = 0.0
+  var backgroundDuration: Double = 0.0
   var exposure: Double = 0.0
   var outputOrientation: OutputOrientation = OutputOrientation.DEVICE
   var androidPreviewViewType: PreviewViewType = PreviewViewType.SURFACE_VIEW
@@ -229,6 +235,13 @@ class CameraView(context: Context) :
         config.enableLowLightBoost = lowLightBoost
         config.torch = torch
         config.exposure = exposure
+
+        config.torchLevel = torchLevel
+        config.torchDelay = torchDelay
+        config.torchDuration = torchDuration
+        config.backgroundLevel = backgroundLevel
+        config.backgroundDelay = backgroundDelay
+        config.backgroundDuration = backgroundDuration
 
         // Zoom
         config.zoom = zoom
