@@ -193,6 +193,36 @@ class CameraViewManager : ViewGroupManager<CameraView>() {
       view.torch = Torch.OFF
     }
   }
+  
+  @ReactProp(name = "torchLevel")
+  fun setTorchLevel(view: CameraView, torchLevel: Double) {
+    view.torchLevel = torchLevel
+  }
+
+  @ReactProp(name = "torchDelay")
+  fun setTorchDelay(view: CameraView, torchDelay: Double) {
+    view.torchDelay = torchDelay
+  }
+
+  @ReactProp(name = "torchDuration")
+  fun setTorchDuration(view: CameraView, torchDuration: Double) {
+    view.torchDuration = torchDuration
+  }
+
+  @ReactProp(name = "backgroundLevel")
+  fun setBackgroundLevel(view: CameraView, backgroundLevel: Double) {
+    view.backgroundLevel = backgroundLevel
+  }
+
+  @ReactProp(name = "backgroundDelay")
+  fun setBackgroundDelay(view: CameraView, backgroundDelay: Double) {
+    view.backgroundDelay = backgroundDelay
+  }
+
+  @ReactProp(name = "backgroundDuration")
+  fun setBackgroundDuration(view: CameraView, backgroundDuration: Double) {
+    view.backgroundDuration = backgroundDuration
+  }
 
   @ReactProp(name = "zoom")
   fun setZoom(view: CameraView, zoom: Double) {

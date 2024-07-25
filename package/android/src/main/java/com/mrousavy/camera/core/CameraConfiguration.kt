@@ -31,6 +31,15 @@ data class CameraConfiguration(
   var fps: Int? = null,
   var enableLowLightBoost: Boolean = false,
   var torch: Torch = Torch.OFF,
+
+  var torchLevel: Double = 0.0,
+  var torchDelay: Double = 0.0,
+  var torchDuration: Double = 0.0,
+  var backgroundLevel: Double = 0.0,
+  var backgroundDelay: Double = 0.0,
+  var backgroundDuration: Double = 0.0,
+  var isTorchOn: Boolean = false,
+
   var videoStabilizationMode: VideoStabilizationMode = VideoStabilizationMode.OFF,
   var exposure: Double? = null,
 

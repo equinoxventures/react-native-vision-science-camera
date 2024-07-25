@@ -6,11 +6,13 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.media.AudioManager
+import android.os.Build
 import android.util.Log
 import android.util.Range
 import android.util.Size
 import androidx.annotation.MainThread
 import androidx.annotation.OptIn
+import androidx.annotation.RequiresApi
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraControl
 import androidx.camera.core.CameraSelector
@@ -61,10 +63,29 @@ import com.mrousavy.camera.core.types.VideoStabilizationMode
 import com.mrousavy.camera.core.utils.FileUtils
 import com.mrousavy.camera.core.utils.runOnUiThread
 import com.mrousavy.camera.frameprocessors.Frame
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.io.Closeable
 import kotlin.math.roundToInt
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.time.Instant
+import kotlin.time.Duration.Companion.milliseconds
+
+data class RecordingTimestamps(
+    var actualRecordingStartedAt: Long? = null,
+    var actualTorchOnAt: Long? = null,
+    var actualTorchOffAt: Long? = null,
+    var actualRecordingEndedAt: Long? = null,
+    var requestTorchOnAt: Long? = null,
+    var requestTorchOffAt: Long? = null,
+    var actualBackgroundTorchOnAt: Long? = null,
+    var actualBackgroundTorchOffAt: Long? = null,
+    var requestBackgroundTorchOnAt: Long? = null,
+    var requestBackgroundTorchOffAt: Long? = null
+)
 
 class CameraSession(private val context: Context, private val callback: Callback) :
   Closeable,
@@ -101,6 +122,7 @@ class CameraSession(private val context: Context, private val callback: Callback
   // Threading
   private val mainExecutor = ContextCompat.getMainExecutor(context)
 
+  private var recordingTimestamps = RecordingTimestamps()
   init {
     lifecycleRegistry.currentState = Lifecycle.State.CREATED
     lifecycle.addObserver(object : LifecycleEventObserver {
@@ -526,6 +548,7 @@ class CameraSession(private val context: Context, private val callback: Callback
     return enable
   }
 
+  @RequiresApi(Build.VERSION_CODES.O)
   @OptIn(ExperimentalPersistentRecording::class)
   @SuppressLint("MissingPermission", "RestrictedApi")
   fun startRecording(
@@ -556,7 +579,41 @@ class CameraSession(private val context: Context, private val callback: Callback
     isRecordingCanceled = false
     recording = pendingRecording.start(CameraQueues.cameraExecutor) { event ->
       when (event) {
-        is VideoRecordEvent.Start -> Log.i(TAG, "Recording started!")
+        is VideoRecordEvent.Start -> {
+          Log.i(TAG, "Recording started!")
+
+          if (configuration?.backgroundDelay?.toInt()!! > 0) {
+            setTorchMode("off", torchLevelVal = configuration?.torchLevel)
+          }
+
+          val recordingStartTimestamp = Instant.now().epochSecond
+          recordingTimestamps.actualRecordingStartedAt = Instant.now().epochSecond
+
+          val torchDelay = configuration?.torchDelay?.toInt()?.milliseconds
+
+          val torchDelayInt = configuration?.torchDelay?.toInt()?.milliseconds
+          val torchDurationInt = configuration?.torchDuration?.toInt()?.milliseconds
+          val torchEnd = torchDurationInt?.let { torchDelayInt?.plus(it) }
+
+          if (configuration?.torchDuration?.toInt()!! > 0) {
+            CoroutineScope(Dispatchers.Main).launch {
+              if (torchDelay != null) {
+                delay(torchDelay)
+                recordingTimestamps.requestTorchOnAt = Instant.now().epochSecond
+                setTorchMode("on", torchLevelVal = configuration?.torchLevel)
+                recordingTimestamps.actualTorchOnAt = Instant.now().epochSecond
+              }
+            }
+            CoroutineScope(Dispatchers.Main).launch {
+              if (torchEnd != null) {
+                delay(torchEnd)
+                recordingTimestamps.requestTorchOffAt = Instant.now().epochSecond
+                setTorchMode("off", torchLevelVal = configuration?.torchLevel)
+                recordingTimestamps.actualTorchOffAt = Instant.now().epochSecond
+              }
+            }
+          }
+        }
 
         is VideoRecordEvent.Resume -> Log.i(TAG, "Recording resumed!")
 
@@ -590,16 +647,49 @@ class CameraSession(private val context: Context, private val callback: Callback
           val durationMs = event.recordingStats.recordedDurationNanos / 1_000_000
           Log.i(TAG, "Successfully completed video recording! Captured ${durationMs.toDouble() / 1_000.0} seconds.")
           val path = event.outputResults.outputUri.path ?: throw UnknownRecorderError(false, null)
-          val video = Video(path, durationMs, size)
+
+          val metadata = mapOf(
+            "actualRecordingStartedAt" to recordingTimestamps.actualRecordingStartedAt,
+            "actualTorchOnAt" to recordingTimestamps.actualTorchOnAt,
+            "actualTorchOffAt" to recordingTimestamps.actualTorchOffAt,
+            "actualRecordingEndedAt" to recordingTimestamps.actualRecordingEndedAt,
+            "requestTorchOnAt" to recordingTimestamps.requestTorchOnAt,
+            "requestTorchOffAt" to recordingTimestamps.requestTorchOffAt,
+            "requestBackgroundTorchOnAt" to recordingTimestamps.requestBackgroundTorchOnAt,
+            "requestBackgroundTorchOffAt" to recordingTimestamps.requestBackgroundTorchOffAt,
+            "actualBackgroundTorchOnAt" to recordingTimestamps.actualBackgroundTorchOnAt,
+            "actualBackgroundTorchOffAt" to recordingTimestamps.actualBackgroundTorchOffAt
+          )
+          val video = Video(path, durationMs, size, metadata)
           callback(video)
         }
       }
     }
   }
 
+  private fun setTorchMode(torchMode: String, torchLevelVal: Double?) {
+    try {
+      when (torchMode.lowercase()) {
+        "on" -> {
+          camera?.cameraControl?.enableTorch(true)
+          Log.d("Torch", "Torch turned on. Level: ${torchLevelVal?.roundToInt()}")
+        }
+        "off" -> {
+          camera?.cameraControl?.enableTorch(false)
+        }
+        else -> {
+          // Handle any other modes like "auto"
+          println("Invalid torch mode: $torchMode")
+        }
+      }
+    } catch (e: Exception) {
+      e.printStackTrace()
+    }
+  }
+
   fun stopRecording() {
     val recording = recording ?: throw NoRecordingInProgressError()
-
+    setTorchMode("off", 1.0)
     recording.stop()
     this.recording = null
   }
