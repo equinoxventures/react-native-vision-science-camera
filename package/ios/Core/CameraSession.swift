@@ -33,6 +33,7 @@ final class CameraSession: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
   var recordingSession: RecordingSession?
   var didCancelRecording = false
   var orientationManager = OrientationManager()
+  var isRecording = false
 
   var recordingTimestamps = RecordingTimestamps()
 

@@ -236,7 +236,7 @@ extension CameraSession {
           throw CameraError.capture(.noRecordingInProgress)
         }
         // Use Video [AVCaptureSession] clock as a timebase - all other sessions (here; audio) have to be synced to that Clock.
-        recordingSession.stop(clock: self.captureSession.clock)
+        recordingSession.stop()
         let recordingStopTimestamp = NSDate().timeIntervalSince1970
         self.recordingTimestamps.actualRecordingEndedAt = NSDate().timeIntervalSince1970
         // There might be late frames, so maybe we need to still provide more Frames to the RecordingSession. Let's keep isRecording true for now.
@@ -262,7 +262,7 @@ extension CameraSession {
         guard let recordingSession = self.recordingSession else {
           throw CameraError.capture(.noRecordingInProgress)
         }
-        self.isRecording(false)
+        self.isRecording = false
         recordingSession.pause()
         return nil
       }
@@ -278,7 +278,7 @@ extension CameraSession {
         guard let recordingSession = self.recordingSession else {
           throw CameraError.capture(.noRecordingInProgress)
         }
-         self.isRecording(true)
+         self.isRecording = true
         recordingSession.resume()
         return nil
       }
