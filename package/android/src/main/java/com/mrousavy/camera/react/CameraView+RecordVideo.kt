@@ -30,6 +30,16 @@ fun CameraView.startRecording(options: RecordVideoOptions, onRecordCallback: Cal
     map.putDouble("duration", video.durationMs.toDouble() / 1000.0)
     map.putInt("width", video.size.width)
     map.putInt("height", video.size.height)
+    
+    // Add metadata
+    val metadataMap = Arguments.createMap()
+    video.metadata.forEach { (key, value) ->
+      if (value != null) {
+        metadataMap.putDouble(key, value.toDouble())
+      }
+    }
+    map.putMap("metadata", metadataMap)
+    
     onRecordCallback(map, null)
   }
   val onError = { error: CameraError ->

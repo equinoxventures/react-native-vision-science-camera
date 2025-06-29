@@ -171,6 +171,7 @@ fun setTorchMode(torchMode: String, torchLevelVal: Double?, camera: Camera) {
 fun CameraSession.stopRecording() {
   val recording = recording ?: throw NoRecordingInProgressError()
 
+  recordingTimestamps.actualRecordingEndedAt = Instant.now().epochSecond
   recording.stop()
   this.recording = null
 }
