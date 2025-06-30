@@ -63,8 +63,8 @@ fun CameraSession.startRecording(
           setTorchMode("off", torchLevelVal = configuration?.torchLevel, camera!!)
         }
 
-        val recordingStartTimestamp = Instant.now().epochSecond
-        recordingTimestamps.actualRecordingStartedAt = Instant.now().epochSecond
+        val recordingStartTimestamp = System.currentTimeMillis()
+        recordingTimestamps.actualRecordingStartedAt = System.currentTimeMillis()
 
         val torchDelay = configuration?.torchDelay?.toInt()?.milliseconds
 
@@ -76,17 +76,17 @@ fun CameraSession.startRecording(
           CoroutineScope(Dispatchers.Main).launch {
             if (torchDelay != null) {
               delay(torchDelay)
-              recordingTimestamps.requestTorchOnAt = Instant.now().epochSecond
+              recordingTimestamps.requestTorchOnAt = System.currentTimeMillis()
               setTorchMode("on", torchLevelVal = configuration?.torchLevel, camera!!)
-              recordingTimestamps.actualTorchOnAt = Instant.now().epochSecond
+              recordingTimestamps.actualTorchOnAt = System.currentTimeMillis()
             }
           }
           CoroutineScope(Dispatchers.Main).launch {
             if (torchEnd != null) {
               delay(torchEnd)
-              recordingTimestamps.requestTorchOffAt = Instant.now().epochSecond
+              recordingTimestamps.requestTorchOffAt = System.currentTimeMillis()
               setTorchMode("off", torchLevelVal = configuration?.torchLevel, camera!!)
-              recordingTimestamps.actualTorchOffAt = Instant.now().epochSecond
+              recordingTimestamps.actualTorchOffAt = System.currentTimeMillis()
             }
           }
         }
@@ -171,6 +171,7 @@ fun setTorchMode(torchMode: String, torchLevelVal: Double?, camera: Camera) {
 fun CameraSession.stopRecording() {
   val recording = recording ?: throw NoRecordingInProgressError()
 
+  recordingTimestamps.actualRecordingEndedAt = System.currentTimeMillis()
   recording.stop()
   this.recording = null
 }
