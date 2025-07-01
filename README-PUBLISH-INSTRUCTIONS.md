@@ -17,8 +17,8 @@ git push -f origin main
 ### Step 4:
 - Login to npm with `npm login`
 - To publish to NPM we need to run the following command on terminal on root level of the project.
-- Get the One time password from your authenticator app with your npm login. 
-- Run `node npm-publish.sh --otp=123456`
+- Make sure you have .npmrc in the root directory with one line: `//registry.npmjs.org/:_authToken=YOUR_AUTH_TOKEN`
+- Run `node npm-publish.sh`
 
 ### Step 5:
 - remove temporary changes to `package/package.json`
